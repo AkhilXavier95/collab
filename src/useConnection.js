@@ -6,18 +6,20 @@ function pause(time) {
 
 export const useConnection = (worker, latency) => {
   const [disconnected, setDisconnected] = useState(null);
+
   const _request = (value) => {
+    console.log({ value, worker });
     return new Promise((resolve) => {
       const channel = new MessageChannel();
       channel.port2.onmessage = (event) => resolve(JSON.parse(event.data));
-      worker.postMessage(JSON.stringify(value), [channel.port1]);
-      console.log({ worker });
+      worker.postMessage(value, [channel.port1]);
     });
   };
 
   const request = async (value) => {
     await (disconnected ? disconnected.wait : pause(latency));
     const result = await _request(value);
+    console.log({ result });
     await (disconnected ? disconnected.wait : pause(latency));
     return result;
   };

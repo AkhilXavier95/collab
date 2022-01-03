@@ -1,4 +1,4 @@
-import { ViewPlugin } from "@codemirror/view";
+import { ViewPlugin, EditorView } from "@codemirror/view";
 import {
   receiveUpdates,
   sendableUpdates,
@@ -9,7 +9,7 @@ import { ChangeSet } from "@codemirror/state";
 
 function pushUpdates(connection, version, fullUpdates) {
   // Strip off transaction data
-  let updates = fullUpdates.map((u) => ({
+  const updates = fullUpdates.map((u) => ({
     clientID: u.clientID,
     changes: u.changes.toJSON()
   }));
@@ -25,13 +25,14 @@ function pullUpdates(connection, version) {
   );
 }
 
-export const usePeerExtension = (startVersion, connection, editorView) => {
+export const usePeerExtension = (startVersion, connection) => {
   let plugin = ViewPlugin.fromClass(
     class {
-      constructor() {
-        this.pushing = false;
-        this.done = false;
-        this.view = editorView || { state: {} };
+      pushing = false;
+      done = false;
+
+      constructor(view) {
+        this.view = view;
         this.pull();
       }
 
@@ -42,16 +43,19 @@ export const usePeerExtension = (startVersion, connection, editorView) => {
       }
 
       async push() {
-        let updates = sendableUpdates(this.view.state);
-        if (this.pushing || !updates.length) return;
+        const updates = sendableUpdates(this.view.state);
+        if (this.pushing || !updates.length) {
+          return;
+        }
         this.pushing = true;
-        let version = getSyncedVersion(this.view.state);
+        const version = getSyncedVersion(this.view.state);
         await pushUpdates(connection, version, updates);
         this.pushing = false;
         // Regardless of whether the push failed or new updates came in
         // while it was running, try again if there's updates remaining
-        if (sendableUpdates(this.view.state).length)
+        if (sendableUpdates(this.view.state).length) {
           setTimeout(() => this.push(), 100);
+        }
       }
 
       async pull() {
