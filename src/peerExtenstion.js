@@ -1,4 +1,4 @@
-import { ViewPlugin, EditorView } from "@codemirror/view";
+import { ViewPlugin } from "@codemirror/view";
 import {
   receiveUpdates,
   sendableUpdates,
@@ -25,7 +25,7 @@ function pullUpdates(connection, version) {
   );
 }
 
-export const usePeerExtension = (startVersion, connection) => {
+export const getPeerExtension = (startVersion, connection) => {
   let plugin = ViewPlugin.fromClass(
     class {
       pushing = false;
