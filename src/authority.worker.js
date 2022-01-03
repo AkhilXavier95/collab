@@ -12,9 +12,13 @@ onmessage = function (event) {
     event.ports[0].postMessage(JSON.stringify(value));
   }
   const data = event.data;
+  console.log({ data });
   if (data.type === "pullUpdates") {
-    if (data.version < updates.length) resp(updates.slice(data.version));
-    else pending.push(resp);
+    if (data.version < updates.length) {
+      resp(updates.slice(data.version));
+    } else {
+      pending.push(resp);
+    }
   } else if (data.type === "pushUpdates") {
     if (data.version !== updates.length) {
       resp(false);
@@ -24,11 +28,14 @@ onmessage = function (event) {
         // instance
         const changes = ChangeSet.fromJSON(update.changes);
         updates.push({ changes, clientID: update.clientID });
+        console.log({ changes });
         doc = changes.apply(doc);
       }
       resp(true);
       // Notify pending requests
-      while (pending.length) pending.pop()(data.updates);
+      while (pending.length) {
+        pending.pop()(data.updates);
+      }
     }
   } else if (data.type === "getDocument") {
     resp({ version: updates.length, doc: doc.toString() });

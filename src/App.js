@@ -19,6 +19,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
 
   const initialConnection = useConnection(worker, 0);
+
   const peer1Connection = useConnection(worker, 100);
   const peer2Connection = useConnection(worker, 100);
 
@@ -49,12 +50,18 @@ export default function App() {
         height="200px"
         extensions={[basicSetup, javascript({ jsx: true }), peerExtension1]}
         onChange={(value) => console.log(value)}
+        options={{
+          lineNumbers: false
+        }}
       />
       <br />
       <CodeMirror
         value={doc}
         height="200px"
         extensions={[basicSetup, javascript({ jsx: true }), peerExtension2]}
+        options={{
+          lineNumbers: false
+        }}
       />
     </>
   );
